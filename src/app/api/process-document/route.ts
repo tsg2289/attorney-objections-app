@@ -97,23 +97,24 @@ ANSWER:
 
 For each discovery request, provide full responses in this format:
 SPECIAL ${requestType} NO. [NUMBER]: [Include the exact text of the original question/request]
-OBJECTION: [Provide appropriate legal objections if any apply, using "Subject to and without waiving the foregoing objection" when answering despite objections]
-ANSWER: [Provide substantive answer based on the fact pattern provided]
+OBJECTION: [Provide appropriate legal objections if any apply]
+ANSWER: Subject to and without waiving the foregoing objection, [Provide substantive answer based on the fact pattern provided]
 
 IMPORTANT FORMATTING RULES:
 - Extract the exact question/request text from the document
 - Use section dividers exactly as shown above
 - For objections-only section: Leave ANSWER: blank
-- For complete responses: Provide factual answers based on the fact pattern
+- For complete responses: Always start answers with "Subject to and without waiving the foregoing objection," then provide factual answers based on the fact pattern
 - Use appropriate legal objections such as:
+  * Overly broad and burdensome
   * Vague and ambiguous
-  * Overly broad and burdensome  
   * Seeks information not reasonably calculated to lead to the discovery of admissible evidence
   * Seeks privileged information protected by attorney-client privilege
   * Calls for a legal conclusion
   * Compound question
   * Assumes facts not in evidence
 - Maintain proper legal formatting and capitalization
+- Each interrogatory should be numbered sequentially
 
 Please generate both sections for all numbered requests in the document.`;
 
@@ -193,6 +194,7 @@ export async function POST(request: NextRequest) {
       // Split response into objections and answers sections
       const sections = splitResponse(response);
       
+      // Return the complete responses as the primary content
       return NextResponse.json({ 
         objections: sections.objections,
         answers: sections.answers 
