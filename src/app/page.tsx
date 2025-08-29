@@ -7,6 +7,9 @@ export default function Home() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [objections, setObjections] = useState<string>('');
+  const [factPattern, setFactPattern] = useState<string>('');
+  const [isGeneratingAnswers, setIsGeneratingAnswers] = useState(false);
+  const [answeredRequests, setAnsweredRequests] = useState<string>('');
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -47,9 +50,42 @@ export default function Home() {
     }
   };
 
-  const handleDownloadDocx = async () => {
-    if (!objections) {
-      alert('No objections to download.');
+  const handleGenerateAnswers = async () => {
+    if (!uploadedFile || !discoveryType || !factPattern.trim()) {
+      alert('Please upload a document, select discovery type, and provide a fact pattern.');
+      return;
+    }
+
+    setIsGeneratingAnswers(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', uploadedFile);
+      formData.append('discoveryType', discoveryType);
+      formData.append('factPattern', factPattern);
+
+      const response = await fetch('/api/generate-answers', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate answers');
+      }
+
+      const data = await response.json();
+      setAnsweredRequests(data.answers);
+    } catch (error) {
+      console.error('Error generating answers:', error);
+      alert('Failed to generate answers. Please try again.');
+    } finally {
+      setIsGeneratingAnswers(false);
+    }
+  };
+
+  const handleDownloadDocx = async (content: string, type: string) => {
+    if (!content) {
+      alert(`No ${type} to download.`);
       return;
     }
 
@@ -60,9 +96,9 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          objections, 
+          objections: content, 
           discoveryType,
-          filename: `${discoveryType}-objections.docx`
+          filename: `${discoveryType}-${type}.docx`
         }),
       });
 
@@ -75,7 +111,7 @@ export default function Home() {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `${discoveryType}-objections.docx`;
+      a.download = `${discoveryType}-${type}.docx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -132,8 +168,26 @@ export default function Home() {
               )}
             </div>
 
-            {/* Process Button */}
-            <div className="flex justify-center">
+            {/* Fact Pattern Input */}
+            <div>
+              <label htmlFor="fact-pattern" className="block text-sm font-medium text-gray-700 mb-2">
+                Fact Pattern (Optional - for generating answers)
+              </label>
+              <textarea
+                id="fact-pattern"
+                value={factPattern}
+                onChange={(e) => setFactPattern(e.target.value)}
+                placeholder="Enter the facts of your case here. This will be used to generate substantive answers to the discovery requests. For example: 'The remodel began in January 2024. Work was halted in May due to permit issues. The electrical contractor failed to complete installation of 5 outlets in the kitchen and 3 in the bathroom...'"
+                rows={6}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Provide case facts to generate substantive answers alongside objections
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={handleProcessDocument}
                 disabled={!uploadedFile || !discoveryType || isProcessing}
@@ -141,6 +195,16 @@ export default function Home() {
               >
                 {isProcessing ? 'Processing...' : 'Generate Objections'}
               </button>
+              
+              {factPattern.trim() && (
+                <button
+                  onClick={handleGenerateAnswers}
+                  disabled={!uploadedFile || !discoveryType || !factPattern.trim() || isGeneratingAnswers}
+                  className="px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {isGeneratingAnswers ? 'Generating...' : 'Generate Answers'}
+                </button>
+              )}
             </div>
 
             {/* Results */}
@@ -149,14 +213,31 @@ export default function Home() {
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold text-gray-900">Generated Objections</h2>
                   <button
-                    onClick={handleDownloadDocx}
+                    onClick={() => handleDownloadDocx(objections, 'objections')}
                     className="px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   >
-                    Download DOCX
+                    Download Objections DOCX
                   </button>
                 </div>
                 <div className="bg-gray-50 rounded-md p-4 max-h-96 overflow-y-auto">
                   <pre className="whitespace-pre-wrap text-sm text-gray-800">{objections}</pre>
+                </div>
+              </div>
+            )}
+
+            {answeredRequests && (
+              <div className="border-t pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-gray-900">Generated Answers</h2>
+                  <button
+                    onClick={() => handleDownloadDocx(answeredRequests, 'answers')}
+                    className="px-4 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                  >
+                    Download Answers DOCX
+                  </button>
+                </div>
+                <div className="bg-gray-50 rounded-md p-4 max-h-96 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-sm text-gray-800">{answeredRequests}</pre>
                 </div>
               </div>
             )}
