@@ -61,20 +61,40 @@ export default function Home() {
 
 
 
-  const handleDownloadDocx = async (content: string, type: string) => {
-    if (!content) {
-      alert(`No ${type} to download.`);
+  const handleDownloadDocx = async (objectionsContent: string, answersContent: string | null, type: string) => {
+    if (!objectionsContent) {
+      alert(`No content to download.`);
       return;
     }
 
     try {
+      // Combine objections and answers into one document
+      let combinedContent = '';
+      
+      if (answersContent) {
+        // If we have both objections and answers, create a comprehensive document
+        combinedContent = `DISCOVERY RESPONSES
+
+=== OBJECTIONS ONLY ===
+
+${objectionsContent}
+
+
+=== COMPLETE RESPONSES WITH ANSWERS ===
+
+${answersContent}`;
+      } else {
+        // If only objections, use just the objections
+        combinedContent = objectionsContent;
+      }
+
       const response = await fetch('/api/generate-docx', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          objections: content, 
+          objections: combinedContent, 
           discoveryType,
           filename: `${discoveryType}-${type}.docx`
         }),
@@ -179,34 +199,34 @@ export default function Home() {
             {objections && (
               <div className="border-t pt-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900">Generated Objections</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {answeredRequests ? 'Generated Discovery Responses' : 'Generated Objections'}
+                  </h2>
                   <button
-                    onClick={() => handleDownloadDocx(objections, 'objections')}
+                    onClick={() => handleDownloadDocx(objections, answeredRequests, factPattern.trim() ? 'complete-responses' : 'objections')}
                     className="px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   >
-                    Download Objections DOCX
+                    Download {factPattern.trim() ? 'Complete Responses' : 'Objections'} DOCX
                   </button>
                 </div>
-                <div className="bg-gray-50 rounded-md p-4 max-h-96 overflow-y-auto">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-800">{objections}</pre>
+                
+                {/* Objections Section */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Objections Only</h3>
+                  <div className="bg-gray-50 rounded-md p-4 max-h-96 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-800">{objections}</pre>
+                  </div>
                 </div>
-              </div>
-            )}
 
-            {answeredRequests && (
-              <div className="border-t pt-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900">Generated Answers</h2>
-                  <button
-                    onClick={() => handleDownloadDocx(answeredRequests, 'answers')}
-                    className="px-4 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                  >
-                    Download Answers DOCX
-                  </button>
-                </div>
-                <div className="bg-gray-50 rounded-md p-4 max-h-96 overflow-y-auto">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-800">{answeredRequests}</pre>
-                </div>
+                {/* Answers Section (if available) */}
+                {answeredRequests && (
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Complete Responses with Answers</h3>
+                    <div className="bg-gray-50 rounded-md p-4 max-h-96 overflow-y-auto">
+                      <pre className="whitespace-pre-wrap text-sm text-gray-800">{answeredRequests}</pre>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
