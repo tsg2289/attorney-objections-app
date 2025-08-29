@@ -118,7 +118,7 @@ export default function Home() {
                 id="discovery-type"
                 value={discoveryType}
                 onChange={(e) => setDiscoveryType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
               >
                 <option value="">Select discovery type...</option>
                 <option value="interrogatories">Interrogatories</option>
@@ -137,7 +137,7 @@ export default function Home() {
                 type="file"
                 accept=".pdf,.doc,.docx,.txt"
                 onChange={handleFileUpload}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
               {uploadedFile && (
                 <p className="mt-2 text-sm text-gray-600">
