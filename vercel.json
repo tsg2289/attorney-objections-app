@@ -1,4 +1,7 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
   "functions": {
     "src/app/api/process-document/route.ts": {
       "maxDuration": 30
@@ -6,8 +9,5 @@
     "src/app/api/generate-docx/route.ts": {
       "maxDuration": 30
     }
-  },
-  "env": {
-    "OPENAI_API_KEY": "@openai_api_key"
   }
 }
