@@ -7,7 +7,8 @@ const openai = new OpenAI({
 });
 
 async function extractTextFromFile(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
   
   if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
       file.type === 'application/msword' || 
@@ -18,7 +19,7 @@ async function extractTextFromFile(file: File): Promise<string> {
     return result.value;
   } else if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
     // Handle text files
-    const text = new TextDecoder().decode(buffer);
+    const text = new TextDecoder().decode(arrayBuffer);
     return text;
   } else {
     throw new Error('Unsupported file type. Please upload a .doc, .docx, or .txt file.');
