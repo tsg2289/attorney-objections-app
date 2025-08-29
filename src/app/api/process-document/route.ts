@@ -27,6 +27,10 @@ async function extractTextFromFile(file: File): Promise<string> {
 }
 
 function getObjectionPrompt(discoveryType: string, documentText: string): string {
+  const requestType = discoveryType === 'interrogatories' ? 'INTERROGATORY' : 
+                     discoveryType === 'request-for-documents' ? 'REQUEST FOR PRODUCTION' : 
+                     'REQUEST FOR ADMISSION';
+
   const basePrompt = `You are a legal assistant helping attorneys draft objections to discovery requests. Based on the discovery document provided, generate appropriate objections with spaces for answers.
 
 Discovery Type: ${discoveryType}
@@ -34,19 +38,31 @@ Discovery Type: ${discoveryType}
 Document Content:
 ${documentText}
 
-Please format your response as follows:
-- For each discovery request/question, provide appropriate objections
-- Use the format: "Special ${discoveryType === 'interrogatories' ? 'Interrogatory' : discoveryType === 'request-for-documents' ? 'Request for Production' : 'Request for Admission'} No. XX"
-- Follow with "OBJECTION:" and list applicable objections
-- Then add "ANSWER:" with a space for the attorney to fill in
-- Use common legal objections such as:
-  * Objection: Vague and ambiguous
-  * Objection: Overly broad and burdensome
-  * Objection: Seeks information not reasonably calculated to lead to the discovery of admissible evidence
-  * Objection: Seeks privileged information protected by attorney-client privilege
-  * Objection: Calls for a legal conclusion
-  * Objection: Compound question
-  * Objection: Seeks information outside the scope of discovery
+Please format your response EXACTLY as follows for each discovery request:
+
+SPECIAL ${requestType} NO. [NUMBER]: [Include the exact text of the original question/request from the document]
+OBJECTION: [Provide appropriate legal objections]
+ANSWER: 
+
+Example format:
+SPECIAL ${requestType} NO. 6: Please describe in detail the reasons for the incomplete remodel as of May 15, 2024, including the unfinished electrical work and multiple outlets not installed.
+OBJECTION: This interrogatory is vague and ambiguous as it does not specify what constitutes "incomplete remodel" or what level of detail is required in the response.
+ANSWER: 
+
+IMPORTANT FORMATTING RULES:
+- Extract the exact question/request text from the document and include it after the number
+- Use appropriate legal objections such as:
+  * Vague and ambiguous
+  * Overly broad and burdensome
+  * Seeks information not reasonably calculated to lead to the discovery of admissible evidence
+  * Seeks privileged information protected by attorney-client privilege
+  * Calls for a legal conclusion
+  * Compound question
+  * Seeks information outside the scope of discovery
+  * Assumes facts not in evidence
+- Leave "ANSWER:" with a blank line for the attorney to fill in
+- Maintain proper legal formatting and capitalization
+- Process each numbered request/question from the document
 
 Please maintain proper legal formatting and be specific to the type of discovery being objected to.`;
 
