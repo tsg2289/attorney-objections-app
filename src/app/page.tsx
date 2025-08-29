@@ -8,7 +8,6 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [objections, setObjections] = useState<string>('');
   const [factPattern, setFactPattern] = useState<string>('');
-  const [isGeneratingAnswers, setIsGeneratingAnswers] = useState(false);
   const [answeredRequests, setAnsweredRequests] = useState<string>('');
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,6 +29,11 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', uploadedFile);
       formData.append('discoveryType', discoveryType);
+      
+      // If fact pattern is provided, include it for combined generation
+      if (factPattern.trim()) {
+        formData.append('factPattern', factPattern);
+      }
 
       const response = await fetch('/api/process-document', {
         method: 'POST',
@@ -42,6 +46,11 @@ export default function Home() {
 
       const data = await response.json();
       setObjections(data.objections);
+      
+      // If answers were generated, set them too
+      if (data.answers) {
+        setAnsweredRequests(data.answers);
+      }
     } catch (error) {
       console.error('Error processing document:', error);
       alert('Failed to process document. Please try again.');
@@ -50,38 +59,7 @@ export default function Home() {
     }
   };
 
-  const handleGenerateAnswers = async () => {
-    if (!uploadedFile || !discoveryType || !factPattern.trim()) {
-      alert('Please upload a document, select discovery type, and provide a fact pattern.');
-      return;
-    }
 
-    setIsGeneratingAnswers(true);
-    
-    try {
-      const formData = new FormData();
-      formData.append('file', uploadedFile);
-      formData.append('discoveryType', discoveryType);
-      formData.append('factPattern', factPattern);
-
-      const response = await fetch('/api/generate-answers', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate answers');
-      }
-
-      const data = await response.json();
-      setAnsweredRequests(data.answers);
-    } catch (error) {
-      console.error('Error generating answers:', error);
-      alert('Failed to generate answers. Please try again.');
-    } finally {
-      setIsGeneratingAnswers(false);
-    }
-  };
 
   const handleDownloadDocx = async (content: string, type: string) => {
     if (!content) {
@@ -186,25 +164,15 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {/* Action Button */}
+            <div className="flex justify-center">
               <button
                 onClick={handleProcessDocument}
                 disabled={!uploadedFile || !discoveryType || isProcessing}
                 className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {isProcessing ? 'Processing...' : 'Generate Objections'}
+                {isProcessing ? 'Processing...' : factPattern.trim() ? 'Generate Objections & Answers' : 'Generate Objections'}
               </button>
-              
-              {factPattern.trim() && (
-                <button
-                  onClick={handleGenerateAnswers}
-                  disabled={!uploadedFile || !discoveryType || !factPattern.trim() || isGeneratingAnswers}
-                  className="px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  {isGeneratingAnswers ? 'Generating...' : 'Generate Answers'}
-                </button>
-              )}
             </div>
 
             {/* Results */}
