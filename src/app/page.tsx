@@ -157,7 +157,7 @@ export default function Home() {
                 onChange={(e) => setFactPattern(e.target.value)}
                 placeholder="Enter the facts of your case here. This will be used to generate substantive answers to the discovery requests. For example: 'The remodel began in January 2024. Work was halted in May due to permit issues. The electrical contractor failed to complete installation of 5 outlets in the kitchen and 3 in the bathroom...'"
                 rows={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical text-black"
               />
               <p className="mt-1 text-xs text-gray-500">
                 Provide case facts to generate substantive answers alongside objections
